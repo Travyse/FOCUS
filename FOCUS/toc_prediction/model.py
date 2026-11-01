@@ -4,12 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# Add DSINE to the path
-import sys
-dsine_loc = os.path.join(os.path.dirname(__file__), 'DSINE')
-sys.path.append(dsine_loc)
-
-from FOCUS.toc_prediction.DSINE.models.conv_encoder_decoder.dense_depth import DenseDepth
+# DenseDepth architecture, vendored from DSINE (no submodule needed).
+from FOCUS.toc_prediction.dsine import DenseDepth
 
 
 MIN_KAPPA = 0.00
@@ -44,7 +40,18 @@ def activation_fn(out):
 
 
 class FootPredictorModel(nn.Module):
-    def __init__(self, image_size=(256, 256), arch='densedepth__B5__NF2048__down2__bilinear__BN', **kwargs):
+    def __init__(self, image_size=(256, 256), arch='densedepth__B5__NF2048__down2__bilinear__BN',
+                 pretrained_encoder=False, **kwargs):
+        """Build the foot prediction model.
+
+        For inference, pass `pretrained_encoder=False` (default): the encoder
+        weights are loaded from the saved checkpoint, so the ImageNet-trained
+        EfficientNet-B5 weights download is unnecessary (it would otherwise be
+        fetched from GitHub, which can fail on secure clusters). Set
+        `pretrained_encoder=True` only for training a model from scratch,
+        which requires the tf_efficientnet_b5_ap checkpoint in the torch hub
+        cache (see FOCUS/vendor/README.md)."""
+
         super().__init__()
 
         output_dim = 4 + 6 + 1  # normal + toc + mask
@@ -54,7 +61,7 @@ class FootPredictorModel(nn.Module):
 
         _, B, NF, down, learned, BN = arch.split('__')
         self.n_net = DenseDepth(num_classes=output_dim,
-                                B=int(B[1:]), NF=int(NF[2:]), BN=BN == 'BN',
+                                B=int(B[1:]), pretrained=pretrained_encoder, NF=int(NF[2:]), BN=BN == 'BN',
                                 down=int(down.split('down')[1]), learned_upsampling=learned == 'learned',
                                 activation_fn=activation_fn)
 

@@ -14,7 +14,6 @@ dash==2.18.2
 dash-core-components==2.0.0
 dash-html-components==2.0.0
 dash-table==5.0.0
-efficientnet-pytorch==0.7.1
 fastjsonschema==2.20.0
 ffmpeg-python==0.2.0
 filelock==3.16.1
@@ -22,7 +21,6 @@ Flask==3.0.3
 fonttools==4.54.1
 fsspec==2024.10.0
 future==1.0.0
-geffnet==1.0.2
 huggingface-hub==0.26.2
 idna==3.10
 imageio==2.36.0
@@ -56,8 +54,6 @@ pillow==11.0.0
 platformdirs==4.3.6
 plotly==5.24.1
 portalocker==2.10.1
-pretrainedmodels==0.7.4
-pyav==13.1.0
 pyglet==1.5.29
 pymeshlab==2023.12.post2
 pyparsing==3.2.0
@@ -77,7 +73,6 @@ six==1.16.0
 sympy==1.13.1
 tenacity==9.0.0
 threadpoolctl==3.5.0
-timm==0.9.7
 tomli==2.0.2
 torch>=2.5.1
 torchaudio>=2.5.1
@@ -90,4 +85,3 @@ tzdata==2024.2
 urllib3==2.2.3
 Werkzeug==3.0.6
 zipp==3.20.2
-pytorch3d @ git+https://github.com/facebookresearch/pytorch3d.git@81d82980bc82fd605f27cca87f89ba08af94db3d

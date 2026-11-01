@@ -18,10 +18,7 @@ from FOCUS.utils import triangulation
 
 from FOCUS.optim.hyperparameters import OptimHyperparameters
 
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), "utils", "FOUND"))
-from FOCUS.utils.FOUND.FOUND import model as found_model
-
+from FOCUS.optim import find as found_model
 
 from matplotlib import pyplot as plt
 import json

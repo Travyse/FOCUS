@@ -15,9 +15,14 @@ This repository contains the code for foot reconstruction using dense correspond
 
 ## Set-up
 
-1) `git clone --recurse-submodules https://github.com/OllieBoyne/FOCUS.git`
+1) `git clone https://github.com/OllieBoyne/FOCUS.git` (no submodules required)
+
+   The DSINE (normal prediction) and FOUND/FIND (model) code used by FOCUS is
+   included in the repository; the pure-Python `pytorch3d` and `geffnet`
+   subsets are vendored under `FOCUS/vendor` (see `FOCUS/vendor/README.md`).
 2) Install FOCUS and dependencies: `pip install --editable .`[^1]
-3) Download any required data (see Downloads section).
+3) Download any required data (see Downloads section) and place the TOC model
+   checkpoint at `data/toc_model/densedepth_toc_predictor.pth`.
 4) If using uncalibrated images, install [COLMAP](https://colmap.github.io/install.html).
 
 ## Usage
@@ -52,4 +57,7 @@ If you use our work, please cite:
 }
 ```
 
-[^1]: Use environment variable `SKIP_PYTORCH3D=1` if you need to install PyTorch3D separately (e.g. in Windows)
+[^1]: PyTorch3D, `geffnet` (EfficientNet), and PyAV are **not required**: the
+code needed from PyTorch3D and `geffnet` is vendored (pure Python) under
+`FOCUS/vendor/`, and PyAV was unused. Set `FOCUS_SKIP_VENDOR=1` to use an
+actually-installed PyTorch3D instead of the vendored subset.
