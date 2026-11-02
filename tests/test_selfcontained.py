@@ -115,5 +115,94 @@ class TestModelsLoad(unittest.TestCase):
         self.assertEqual(tuple(out["TOC"].shape), (1, 3, 256, 256))
 
 
+class TestVideoUtils(unittest.TestCase):
+    """ffmpeg resolution + frame handling (PATH install or imageio-ffmpeg fallback)."""
+
+    N_FRAMES = 12
+
+    @classmethod
+    def setUpClass(cls):
+        import imageio
+        import numpy as np
+        cls.tmp = __import__("tempfile").mkdtemp(prefix="focus_video_test_")
+        cls.video_path = os.path.join(cls.tmp, "synth.mp4")
+        # note: mimicwrite consumes RGB frames
+        frames = (np.random.RandomState(0).rand(cls.N_FRAMES, 64, 96, 3) * 255).astype("uint8")
+        imageio.mimwrite(cls.video_path, frames, fps=cls.N_FRAMES // 2)
+
+    @classmethod
+    def tearDownClass(cls):
+        import shutil
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def test_get_ffmpeg_exe_resolves_to_existing_binary(self):
+        from FOCUS.utils.video import get_ffmpeg_exe
+        exe = get_ffmpeg_exe()
+        self.assertTrue(os.path.exists(exe), exe)
+
+    def test_focus_ffmpeg_env_override(self):
+        from FOCUS.utils.video import get_ffmpeg_exe
+        sentinel = sys.executable  # any runnable file works as a sentinel
+        try:
+            os.environ["FOCUS_FFMPEG"] = sentinel
+            self.assertEqual(get_ffmpeg_exe(), sentinel)
+        finally:
+            os.environ.pop("FOCUS_FFMPEG", None)
+
+    def test_frame_count_ffprobe_and_fallback_agree(self):
+        import shutil as _shutil
+
+        from FOCUS.utils import video as video_utils
+
+        has_ffprobe = _shutil.which("ffprobe") is not None
+        count = video_utils.get_frame_count(self.video_path)
+        self.assertEqual(count, self.N_FRAMES)
+
+        if has_ffprobe:
+            # force the imageio fallback path and check agreement
+            orig_which = video_utils.shutil.which
+
+            def fake_which(cmd, *a, **k):
+                return None
+
+            video_utils.shutil.which = fake_which
+            try:
+                self.assertEqual(video_utils.get_frame_count(self.video_path), self.N_FRAMES)
+            finally:
+                video_utils.shutil.which = orig_which
+
+    def test_frames_from_video_round_trip(self):
+        import argparse
+        import cv2
+
+        # run_focus imports the fusion chain, which imports pymeshlab; stub it
+        # only on platforms where it is not installable (no py39-arm64 wheel).
+        try:
+            import pymeshlab  # noqa: F401
+        except ImportError:
+            import types
+            stub = types.ModuleType("pymeshlab")
+            stub.MeshSet = object
+            stub.Mesh = object
+            sys.modules["pymeshlab"] = stub
+
+        import FOCUS.run_focus as run_focus_mod
+
+        out_dir = os.path.join(self.tmp, "out")
+        args = argparse.Namespace(
+            video_path=__import__("pathlib").Path(self.video_path),
+            output_folder=__import__("pathlib").Path(out_dir),
+            num_frames=4,
+        )
+        run_focus_mod._frames_from_video(args)
+
+        frames_dir = os.path.join(out_dir, "frames")
+        pngs = sorted(f for f in os.listdir(frames_dir) if f.endswith(".png"))
+        self.assertEqual(len(pngs), 4)
+        for f in pngs:
+            img = cv2.imread(os.path.join(frames_dir, f))
+            self.assertIsNotNone(img)
+
+
 if __name__ == "__main__":
     unittest.main()

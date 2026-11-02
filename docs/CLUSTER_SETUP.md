@@ -23,6 +23,14 @@ Notes:
   exact mapper pipeline the CLI would. `FOCUS/calibration/run_colmap.py`
   automatically uses the COLMAP executable when one is present and falls back
   to pycolmap when it is not - no configuration needed either way.
+- **ffmpeg**: nothing to install separately. `FOCUS/utils/video.py` resolves
+  an ffmpeg binary in this order: `$FOCUS_FFMPEG` override (if set), any
+  `ffmpeg` on PATH, and finally the full static ffmpeg binary bundled inside
+  the `imageio-ffmpeg` wheel (already pinned). Frame counting prefers
+  `ffprobe` when present and otherwise counts via the bundled binary.
+  Frame extraction works across ffmpeg 4.x-9.x (`-vsync`/`-fps_mode` handled
+  automatically). Set `$FOCUS_FFMPEG` to a specific binary if cross-machine
+  reproducibility of extracted frames is required.
 - Python 3.9 environments should end up with `numpy<2`-era pins resolved by
   pip (e.g. `numpy==2.0.2`); this combination is tested (pycolmap 0.6.1 +
   torch 2.5.1 + numpy 2.0.2 on CPython 3.9).

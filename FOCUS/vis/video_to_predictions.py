@@ -10,6 +10,7 @@ import imageio
 from pathlib import Path
 from collections import defaultdict
 import subprocess
+from FOCUS.utils.video import get_ffmpeg_exe
 import tempfile
 
 parser = argparse.ArgumentParser(description="Predict TOC from video.")
@@ -28,8 +29,9 @@ FTYPES = ('rgb', 'toc', 'normal', 'norm_unc', 'toc_unc', 'mask', 'mesh_no_color'
 STACK_FTYPES = ('rgb', 'toc', 'normal', 'mesh_no_color', 'mesh_color')
 
 def overlay_text_on_video(input_video, text, output_video):
+    ffmpeg = get_ffmpeg_exe()
     command = [
-        "ffmpeg",
+        ffmpeg,
         "-i", input_video,
         "-vf", f"drawtext=text='{text}':fontcolor=white:fontsize=50:x=(w-text_w)/2:y=10",
         "-codec:a", "copy",
@@ -38,7 +40,8 @@ def overlay_text_on_video(input_video, text, output_video):
     subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 def hstack_videos(output_loc, videos):
-    args = ['ffmpeg', '-y']
+    ffmpeg = get_ffmpeg_exe()
+    args = [ffmpeg, '-y']
     for i, video in enumerate(videos):
         args += ['-i', video]
 
@@ -48,7 +51,7 @@ def hstack_videos(output_loc, videos):
 
     # ALso convert to gif.
     gif_loc = output_loc.with_suffix('.gif')
-    args = ['ffmpeg', '-y', '-i', output_loc, '-vf', 'fps=25,scale=640:-1', gif_loc]
+    args = [ffmpeg, '-y', '-i', output_loc, '-vf', 'fps=25,scale=640:-1', gif_loc]
     subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 def run(args):

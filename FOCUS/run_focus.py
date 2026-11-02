@@ -62,9 +62,11 @@ produce_videos_script = 'FOCUS/vis/video_to_predictions.py'
 
 def _frames_from_video(args):
 
-    # Check FFMPEG exists.
-    if shutil.which('ffmpeg') is None:
-        raise FileNotFoundError("FFMPEG not found. Please install FFMPEG to extract frames from video.")
+    from FOCUS.utils.video import get_ffmpeg_exe, get_frame_count
+
+    # Resolve an ffmpeg binary (PATH -> $FOCUS_FFMPEG -> imageio-ffmpeg's
+    # bundled binary). See FOCUS/utils/video.py.
+    ffmpeg_exe = get_ffmpeg_exe()
 
     # Check video exists.
     if not args.video_path.exists():
@@ -77,11 +79,25 @@ def _frames_from_video(args):
     desired_frames = args.num_frames if args.num_frames != -1 else total_frames
     interval = max(1, round(total_frames / desired_frames))
 
-    split_frames_command = ['ffmpeg', '-i', str(args.video_path),
-            "-vf", f"select='not(mod(n,{interval}))'",
-            '-vsync', 'vfr', f'{image_dir}/%06d.png']
+    base_cmd = [ffmpeg_exe, '-i', str(args.video_path),
+                "-vf", f"select='not(mod(n,{interval}))'"]
+    out_png_pattern = f'{image_dir}/%06d.png'
 
-    subprocess.run(split_frames_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # ffmpeg < 5.1 uses `-vsync vfr`; `-vsync` was removed in 8.x in favour of
+    # `-fps_mode`. Retry with the modern syntax when the old one is rejected,
+    # making the command work across ffmpeg 4.x - 9.x (distro installs, .deb
+    # packages, and the imageio-ffmpeg bundled binary alike).
+    result = None
+    for vsync_args in (['-vsync', 'vfr'], ['-fps_mode', 'vfr']):
+        result = subprocess.run(base_cmd + vsync_args + [out_png_pattern],
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if result.returncode == 0:
+            break
+    else:
+        raise RuntimeError(
+            f"Frame extraction failed (returncode {result.returncode}). "
+            f"ffmpeg output: {result.stderr.decode(errors='replace')[-500:]}"
+        )
 
     # If too many frames added, remove some.
     output_frames = sorted([f for f in os.listdir(image_dir) if f.endswith('.png')])
