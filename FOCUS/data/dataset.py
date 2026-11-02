@@ -1,5 +1,6 @@
 """A dataset which loads in images, inference results, and calibration into a single,
     unified format."""
+from __future__ import annotations
 
 import cv2
 from pathlib import Path

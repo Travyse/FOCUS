@@ -2,6 +2,7 @@ import dataclasses
 import argparse
 import json
 from pathlib import Path
+from typing import Union
 
 @dataclasses.dataclass(frozen=True)
 class Hyperparameters:
@@ -24,7 +25,7 @@ class Hyperparameters:
         inputs.update(kwargs)
         return cls(**inputs)
 
-    def save(self, path: str | Path):
+    def save(self, path: Union[str, Path]):
         """Save hyperparameters to a file."""
         with open(path, "w") as f:
             json.dump(dataclasses.asdict(self), f)

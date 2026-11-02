@@ -1,3 +1,4 @@
+from __future__ import annotations
 # from FOCUS import camera
 import numpy as np
 

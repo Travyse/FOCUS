@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Run COLMAP using our TOC matches."""
 import os
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Find matches across Views."""
 import FOCUS.data.view
 from FOCUS.matching import correspondence

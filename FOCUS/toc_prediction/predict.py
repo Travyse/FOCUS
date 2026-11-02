@@ -1,3 +1,4 @@
+from __future__ import annotations
 from FOCUS.toc_prediction.model import FootPredictorModel
 from pathlib import Path
 import cv2

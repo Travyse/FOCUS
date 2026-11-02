@@ -1,3 +1,4 @@
+from __future__ import annotations
 import trimesh
 import numpy as np
 import pymeshlab  # NOTE: Importing this and open3D together cause some errors on M1 mac with poisson reconstruction.

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """FOCUS-O, optimization of FIND model to TOC images, implementation."""
 
 import torch

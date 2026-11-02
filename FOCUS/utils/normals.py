@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 
 def rgb2xyz(rgb: np.ndarray) -> np.ndarray:
