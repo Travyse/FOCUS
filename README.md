@@ -21,8 +21,8 @@ This repository contains the code for foot reconstruction using dense correspond
    included in the repository; the pure-Python `pytorch3d` and `geffnet`
    subsets are vendored under `FOCUS/vendor` (see `FOCUS/vendor/README.md`).
 2) Install FOCUS and dependencies: `pip install --editable .`[^1]
-3) Download any required data (see Downloads section) and place the TOC model
-   checkpoint at `data/toc_model/densedepth_toc_predictor.pth`.
+3) Reassemble the TOC model checkpoint from its split chunks (see Downloads
+   section).
 4) If using uncalibrated images, install [COLMAP](https://colmap.github.io/install.html).
 
 ## Usage
@@ -40,9 +40,16 @@ See the `run_focus.py` script for more options.
 
 | Item                                                                                               | Description                                    | Download to      |
 |----------------------------------------------------------------------------------------------------|------------------------------------------------|------------------|
-| [TOC model](https://drive.google.com/file/d/1aU1Bf_pE7WjtWAX85ru9htQGygmTDIUV/view?usp=share_link) | A pre-trained correspondence predictor model.  | `data/toc_model` |
+| TOC model                                                                                          | A pre-trained correspondence predictor model. Shipped in this repository as split chunks (see below). | `data/toc_model` |
 | [Foot 3D](https://github.com/OllieBoyne/Foot3D)                                                    | Multi-view foot dataset for evaluating method. | `data/Foot3D`     |
 | [3D Fits](https://drive.google.com/file/d/1B0V5sRUBkj9kjv-q45jjYdSDiFEe3j-o/view?usp=share_link)   | 3D reconstructions for evaluation, as used in the paper. | `data/3d_fits`     |
+
+The TOC predictor checkpoint exceeds GitHub's 100MB file limit, so it is stored as split chunks. After cloning, reassemble and verify it:
+
+```bash
+cat data/toc_model/densedepth_toc_predictor.pth.part-* > data/toc_model/densedepth_toc_predictor.pth
+sha256sum -c data/toc_model/densedepth_toc_predictor.sha256
+```
 
 ### Citation
 
